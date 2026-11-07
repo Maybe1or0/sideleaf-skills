@@ -1,0 +1,61 @@
+name: Validate npm package
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm run validate
+      - name: Check installer
+        shell: bash
+        run: |
+          set -eu
+          target="$(mktemp -d)"
+          trap 'rm -rf "$target"' EXIT
+          node bin/sideleaf-skills.js install --all --dir "$target"
+          cmp skills/latex-project-init/SKILL.md "$target/latex-project-init/SKILL.md"
+          if node bin/sideleaf-skills.js install latex-project-init --dir "$target"; then
+            echo 'Installer should reject an existing skill without --force' >&2
+            exit 1
+          fi
+          node bin/sideleaf-skills.js install latex-project-init --dir "$target" --force
+          cmp skills/latex-project-init/SKILL.md "$target/latex-project-init/SKILL.md"
+      - name: Check package contents
+        shell: bash
+        run: |
+          set -eu
+          npm pack --dry-run --json > "$RUNNER_TEMP/sideleaf-package.json"
+          node --input-type=module <<'NODE'
+          import { readFile, readdir } from 'node:fs/promises';
+          import path from 'node:path';
+
+          async function files(dir) {
+            const result = [];
+            for (const entry of await readdir(dir, { withFileTypes: true })) {
+              const name = path.join(dir, entry.name);
+              if (entry.isDirectory()) result.push(...await files(name));
+              else if (entry.isFile() && entry.name !== '.gitkeep') result.push(name.split(path.sep).join('/'));
+            }
+            return result;
+          }
+          const [pack] = JSON.parse(await readFile(path.join(process.env.RUNNER_TEMP, 'sideleaf-package.json'), 'utf8'));
+          const included = new Set(pack.files.map(file => file.path));
+          const expected = ['LICENSE', 'bin/sideleaf-skills.js', 'installer/cli.js', ...(await files('skills'))];
+          const missing = expected.filter(file => !included.has(file));
+          if (missing.length) throw new Error(`Package is missing: ${missing.join(', ')}`);
+          console.log(`Package contains the CLI, license, and all ${expected.length - 3} skill files.`);
+          NODE

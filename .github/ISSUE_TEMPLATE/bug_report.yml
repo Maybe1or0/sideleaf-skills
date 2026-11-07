@@ -1,0 +1,16 @@
+name: Bug report
+description: Report a reproducible problem with this repository.
+title: '[Bug]: '
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: Include steps to reproduce and what you expected.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment and relevant output
+      description: Include Python version, operating system, and errors if relevant. Remove sensitive data.

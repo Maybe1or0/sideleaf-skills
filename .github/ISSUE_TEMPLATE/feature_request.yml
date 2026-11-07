@@ -1,0 +1,16 @@
+name: Feature request
+description: Suggest an improvement to SideLeaf Skills.
+title: '[Feature]: '
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or use case
+      description: What would you like to accomplish?
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed approach
+      description: Describe your idea and any alternatives.

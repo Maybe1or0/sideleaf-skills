@@ -1,0 +1,9 @@
+#!/usr/bin/env node
+import { run } from '../installer/cli.js';
+
+try {
+  process.exitCode = await run(process.argv.slice(2));
+} catch (error) {
+  console.error(`Error: ${error.message}`);
+  process.exitCode = 1;
+}

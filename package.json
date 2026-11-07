@@ -1,0 +1,16 @@
+{
+  "name": "sideleaf-skills",
+  "version": "0.1.0",
+  "description": "Install reusable SideLeaf agent skills for LaTeX workflows",
+  "license": "MIT",
+  "repository": { "type": "git", "url": "git+https://github.com/Maybe1or0/sideleaf-skills.git" },
+  "homepage": "https://sideleaf.endium.fr",
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "bin": { "sideleaf-skills": "bin/sideleaf-skills.js" },
+  "files": ["bin/sideleaf-skills.js", "installer/", "skills/"],
+  "scripts": {
+    "validate": "node bin/sideleaf-skills.js list --strict"
+  },
+  "dependencies": { "yaml": "^2.8.1" }
+}
